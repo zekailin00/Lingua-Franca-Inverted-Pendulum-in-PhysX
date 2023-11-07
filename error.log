@@ -1,0 +1,362 @@
+(base) zekailin00@zekailin00-desktop:~/Deskop/PhysX/physx/snippets/snippethelloworld/lf-port$ lfc-dev -c PhysxSimulation.lf 
+lfc: warning: File 'PhysxSimulation.lf' is not located in an 'src' directory.
+lfc: warning: Adopting the current working directory as the package root.
+lfc: info: Generating code for: file:/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf
+lfc: info: Generation mode: STANDALONE
+lfc: info: Generating sources into: /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation
+Cleaning /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/bin
+Cleaning /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen
+lfc: info: Copied 'Hello.cmake' from the file system.
+Cleaning /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/include
+--- Current working directory: /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/build
+--- Executing command: cmake -DLF_REACTION_GRAPH_BREADTH=2 -DLF_THREADED=1 -DNUMBER_OF_WORKERS=0 -DSCHEDULER=NP -DLOG_LEVEL=2 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port -DCMAKE_INSTALL_BINDIR=bin -DLF_FILE_SEPARATOR="/" -DLF_SOURCE_DIRECTORY="/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port" -DLF_PACKAGE_DIRECTORY="/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/." /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation
+-- The C compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Including sources for threaded runtime with 0 worker(s) with scheduler=NP and tracing=.
+-- Including the following sources: tag.c, port.c, mixed_radix.c, reactor_common.c, lf_token.c, environment.c, reactor_threaded.c, scheduler_adaptive.c, scheduler_GEDF_NP_CI.c, scheduler_GEDF_NP.c, scheduler_NP.c, scheduler_PEDF_NP.c, scheduler_sync_tag_advance.c, scheduler_instance.c, watchdog.c, vector.c, pqueue.c, util.c, semaphore.c, hashset.c, hashset_itr.c, modes.c, lf_unix_clock_support.c, lf_unix_syscall_support.c, lf_linux_support.c, lf_macos_support.c, lf_windows_support.c, lf_nrf52_support.c, lf_zephyr_support.c, lf_rp2040_support.c
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Applying preprocessor definitions...
+-- LF_REACTION_GRAPH_BREADTH=2
+-- LF_THREADED=1
+-- LOG_LEVEL=2
+-- NUMBER_OF_WORKERS=0
+-- SCHEDULER=NP
+-- LF_SOURCE_DIRECTORY="/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port"
+-- LF_PACKAGE_DIRECTORY="/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/."
+-- LF_FILE_SEPARATOR="/"
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting CXX compiler ABI info
+CMake Deprecation Warning at CMakeLists.txt:26 (cmake_policy):
+  The OLD behavior for policy CMP0023 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so   
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2") 
+-- Checking for module 'glut'
+--   No package 'glut' found
+-- Found GLUT: /usr/lib/x86_64-linux-gnu/libglut.so  
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/build
+LF cmake script executed
+&&& PATH: /usr/lib/x86_64-linux-gnu/libOpenGL.so;/usr/lib/x86_64-linux-gnu/libGLX.so;/usr/lib/x86_64-linux-gnu/libGLU.so
+&&& PATH: /usr/lib/x86_64-linux-gnu/libglut.so;/usr/lib/x86_64-linux-gnu/libXi.so
+--- Current working directory: /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/build
+--- Executing command: cmake --build . --target install --parallel 24 --config Release
+[  5%] Building C object core/CMakeFiles/core.dir/port.c.o
+[  5%] Building C object core/CMakeFiles/core.dir/tag.c.o
+[  8%] Building C object core/CMakeFiles/core.dir/mixed_radix.c.o
+[ 10%] Building C object core/CMakeFiles/core.dir/lf_token.c.o
+[ 13%] Building C object core/CMakeFiles/core.dir/reactor_common.c.o
+[ 16%] Building C object core/CMakeFiles/core.dir/threaded/scheduler_PEDF_NP.c.o
+[ 21%] Building C object core/CMakeFiles/core.dir/threaded/scheduler_sync_tag_advance.c.o
+[ 21%] Building C object core/CMakeFiles/core.dir/environment.c.o
+[ 24%] Building C object core/CMakeFiles/core.dir/threaded/reactor_threaded.c.o
+[ 27%] Building C object core/CMakeFiles/core.dir/utils/pqueue.c.o
+[ 32%] Building C object core/CMakeFiles/core.dir/utils/util.c.o
+[ 29%] Building C object core/CMakeFiles/core.dir/utils/vector.c.o
+[ 35%] Building C object core/CMakeFiles/core.dir/threaded/scheduler_adaptive.c.o
+[ 40%] Building C object core/CMakeFiles/core.dir/threaded/scheduler_GEDF_NP_CI.c.o
+[ 40%] Building C object core/CMakeFiles/core.dir/threaded/scheduler_GEDF_NP.c.o
+[ 45%] Building C object core/CMakeFiles/core.dir/threaded/scheduler_NP.c.o
+[ 45%] Building C object core/CMakeFiles/core.dir/threaded/watchdog.c.o
+[ 48%] Building C object core/CMakeFiles/core.dir/utils/hashset/hashset_itr.c.o
+[ 51%] Building C object core/CMakeFiles/core.dir/threaded/scheduler_instance.c.o
+[ 54%] Building C object core/CMakeFiles/core.dir/utils/hashset/hashset.c.o
+[ 59%] Building C object core/CMakeFiles/core.dir/utils/semaphore.c.o
+[ 59%] Building C object core/CMakeFiles/core.dir/modal_models/modes.c.o
+[ 62%] Building C object core/CMakeFiles/core.dir/platform/lf_linux_support.c.o
+[ 64%] Building C object core/CMakeFiles/core.dir/platform/lf_nrf52_support.c.o
+[ 67%] Building C object core/CMakeFiles/core.dir/platform/lf_unix_clock_support.c.o
+[ 70%] Building C object core/CMakeFiles/core.dir/platform/lf_zephyr_support.c.o
+[ 72%] Building C object core/CMakeFiles/core.dir/platform/lf_rp2040_support.c.o
+[ 78%] Building C object core/CMakeFiles/core.dir/platform/lf_windows_support.c.o
+[ 78%] Building C object core/CMakeFiles/core.dir/platform/lf_unix_syscall_support.c.o
+[ 81%] Building C object core/CMakeFiles/core.dir/platform/lf_macos_support.c.o
+[ 83%] Linking C static library libcore.a
+[ 83%] Built target core
+[ 89%] Building CXX object CMakeFiles/PhysxSimulation.dir/_physxsimulation_main.cpp.o
+[ 89%] Building C object CMakeFiles/PhysxSimulation.dir/lib/schedule.c.o
+[ 91%] Building CXX object CMakeFiles/PhysxSimulation.dir/_physxdriver.cpp.o
+[ 94%] Building CXX object CMakeFiles/PhysxSimulation.dir/_actuator.cpp.o
+[ 97%] Building CXX object CMakeFiles/PhysxSimulation.dir/PhysxSimulation.cpp.o
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.cpp:4:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/include/PhysxSimulation/PhysxSimulation.h:24:10: error: variable or field ‘value’ declared void
+   24 |     void value;
+      |          ^~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/include/PhysxSimulation/PhysxSimulation.h:42:10: error: variable or field ‘value’ declared void
+   42 |     void value;
+      |          ^~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.h:6,
+                 from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.h:15:10: error: variable or field ‘value’ declared void
+   15 |     void value;
+      |          ^~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.h:43:10: error: variable or field ‘value’ declared void
+   43 |     void value;
+      |          ^~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.h:6,
+                 from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:137:5: error: ‘reactor’ does not name a type
+  137 |     state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+      |     ^~~~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.h:6,
+                 from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:139:10: error: ‘thread’ in namespace ‘std’ does not name a type
+  139 |     state thread: std::thread
+      |          ^~~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.h:6,
+                 from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxsimulation_main.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:137:1: note: ‘std::thread’ is defined in header ‘<thread>’; did you forget to ‘#include <thread>’?
+  136 | 
+  +++ |+#include <thread>
+  137 |     state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+gmake[2]: *** [CMakeFiles/PhysxSimulation.dir/build.make:90: CMakeFiles/PhysxSimulation.dir/_physxsimulation_main.cpp.o] Error 1
+gmake[2]: *** Waiting for unfinished jobs....
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp:26:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.h:15:10: error: variable or field ‘value’ declared void
+   15 |     void value;
+      |          ^~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.h:43:10: error: variable or field ‘value’ declared void
+   43 |     void value;
+      |          ^~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp:26:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:137:5: error: ‘reactor’ does not name a type
+  137 |     state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+      |     ^~~~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp:26:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:139:10: error: ‘thread’ in namespace ‘std’ does not name a type
+  139 |     state thread: std::thread
+      |          ^~~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp:26:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:137:1: note: ‘std::thread’ is defined in header ‘<thread>’; did you forget to ‘#include <thread>’?
+  136 | 
+  +++ |+#include <thread>
+  137 |     state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp: In function ‘void _lf_initialize_trigger_objects()’:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp:95:20: error: ‘reactor’ does not name a type
+   95 |             static reactor::TimePoint _initial = reactor::TimePoint::min();
+      |                    ^~~~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp:96:50: error: ‘struct _physxdriver_self_t’ has no member named ‘prompt_time’
+   96 |             physxsimulation_physxdriver_self[0]->prompt_time = _initial;
+      |                                                  ^~~~~~~~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/PhysxSimulation.cpp:96:64: error: ‘_initial’ was not declared in this scope
+   96 |             physxsimulation_physxdriver_self[0]->prompt_time = _initial;
+      |                                                                ^~~~~~~~
+gmake[2]: *** [CMakeFiles/PhysxSimulation.dir/build.make:132: CMakeFiles/PhysxSimulation.dir/PhysxSimulation.cpp.o] Error 1
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.cpp:4:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/include/PhysxSimulation/PhysxDriver.h:16:5: error: ‘reactor’ does not name a type
+   16 |     reactor::TimePoint prompt_time;
+      |     ^~~~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/include/PhysxSimulation/PhysxDriver.h:18:10: error: ‘thread’ in namespace ‘std’ does not name a type
+   18 |     std::thread thread;
+      |          ^~~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/include/PhysxSimulation/PhysxDriver.h:11:1: note: ‘std::thread’ is defined in header ‘<thread>’; did you forget to ‘#include <thread>’?
+   10 | #include "../include/core/reactor.h"
+  +++ |+#include <thread>
+   11 | #ifdef __cplusplus
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/include/PhysxSimulation/PhysxDriver.h:28:10: error: variable or field ‘value’ declared void
+   28 |     void value;
+      |          ^~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/include/PhysxSimulation/PhysxDriver.h:56:10: error: variable or field ‘value’ declared void
+   56 |     void value;
+      |          ^~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.h:15:10: error: variable or field ‘value’ declared void
+   15 |     void value;
+      |          ^~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.h:43:10: error: variable or field ‘value’ declared void
+   43 |     void value;
+      |          ^~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:137:5: error: ‘reactor’ does not name a type
+  137 |     state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+      |     ^~~~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:139:10: error: ‘thread’ in namespace ‘std’ does not name a type
+  139 |     state thread: std::thread
+      |          ^~~~~~
+In file included from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/src-gen/PhysxSimulation/_physxdriver.cpp:5:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:137:1: note: ‘std::thread’ is defined in header ‘<thread>’; did you forget to ‘#include <thread>’?
+  136 | 
+  +++ |+#include <thread>
+  137 |     state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+In file included from /home/zekailin00/Desktop/PhysX/physx/include/cudamanager/PxCudaContextManager.h:38,
+                 from /home/zekailin00/Desktop/PhysX/physx/include/gpu/PxGpu.h:35,
+                 from /home/zekailin00/Desktop/PhysX/physx/include/PxPhysicsAPI.h:123,
+                 from /home/zekailin00/Desktop/PhysX/physx/snippets/snippetrender/SnippetRender.h:32,
+                 from /home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:8:
+/home/zekailin00/Desktop/PhysX/physx/include/cudamanager/PxCudaTypes.h:42:32: warning: unknown option after ‘#pragma GCC diagnostic’ kind [-Wpragmas]
+   42 | #pragma GCC diagnostic ignored "-Wc++98-compat-pedantic"
+      |                                ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf: In function ‘void renderCallback()’:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:43:14: error: ‘vector’ is not a member of ‘std’
+   43 |             {
+      |              ^     
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:10:1: note: ‘std::vector’ is defined in header ‘<vector>’; did you forget to ‘#include <vector>’?
+    9 |         #include "SnippetRender.h"
+  +++ |+#include <vector>
+   10 |         #include "SnippetCamera.h"
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:43:33: error: expected primary-expression before ‘*’ token
+   43 |             {
+      |                                 ^
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:43:34: error: expected primary-expression before ‘>’ token
+   43 |             {
+      |                                  ^
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:43:36: error: ‘actors’ was not declared in this scope; did you mean ‘acos’?
+   43 |             {
+      |                                    ^     
+      |                                    acos
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf: In function ‘void printTF(const PxTransform&)’:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:97:10: error: ‘cout’ is not a member of ‘std’
+   97 |         {
+      |          ^   
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:10:1: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+    9 |         #include "SnippetRender.h"
+  +++ |+#include <iostream>
+   10 |         #include "SnippetCamera.h"
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:97:79: error: ‘endl’ is not a member of ‘std’
+   97 |         {
+      |                                                                               ^   
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:10:1: note: ‘std::endl’ is defined in header ‘<ostream>’; did you forget to ‘#include <ostream>’?
+    9 |         #include "SnippetRender.h"
+  +++ |+#include <ostream>
+   10 |         #include "SnippetCamera.h"
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:98:10: error: ‘cout’ is not a member of ‘std’
+   98 |             std::cout << "<x,y,z>: " << t.p.x << "|" << t.p.y << "|" << t.p.z << std::endl;
+      |          ^  ~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:98:10: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:98:97: error: ‘endl’ is not a member of ‘std’
+   98 |             std::cout << "<x,y,z>: " << t.p.x << "|" << t.p.y << "|" << t.p.z << std::endl;
+      |                                                                                                 ^   
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:98:97: note: ‘std::endl’ is defined in header ‘<ostream>’; did you forget to ‘#include <ostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf: In function ‘void _physxdriverreaction_function_0(void*)’:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:195:14: error: ‘cout’ is not a member of ‘std’
+  195 | 
+      |              ^   
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:136:1: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+  135 |     input quit: void
+  +++ |+#include <iostream>
+  136 | 
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:197:14: error: ‘cout’ is not a member of ‘std’
+  197 |             printTF(t*localTm);
+      |              ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:197:14: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:199:14: error: ‘cout’ is not a member of ‘std’
+  199 |             printTF(prev ? PxTransform(offset) : t);
+      |              ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:199:14: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:241:5: error: ‘thread’ was not declared in this scope; did you mean ‘fread’?
+  241 | 
+      |     ^     
+      |     fread
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:241:19: error: ‘thread’ is not a member of ‘std’
+  241 | 
+      |                   ^     
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:136:1: note: ‘std::thread’ is defined in header ‘<thread>’; did you forget to ‘#include <thread>’?
+  135 |     input quit: void
+  +++ |+#include <thread>
+  136 | 
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:246:16: error: request for member ‘set’ in ‘initalized’, which is of pointer type ‘_physxdriver_initalized_t*’ (maybe you meant to use ‘->’ ?)
+  246 | 
+      |                ^  
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf: In function ‘void _physxdriverreaction_function_1(void*)’:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:267:18: error: ‘cout’ is not a member of ‘std’
+  267 |                 std::cout << "\rmotor angle pitch: " << angle.pitch << std::endl;
+      |                  ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:250:1: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+  249 | 
+  +++ |+#include <iostream>
+  250 | 
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:267:73: error: ‘endl’ is not a member of ‘std’
+  267 |                 std::cout << "\rmotor angle pitch: " << angle.pitch << std::endl;
+      |                                                                         ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:250:1: note: ‘std::endl’ is defined in header ‘<ostream>’; did you forget to ‘#include <ostream>’?
+  249 | 
+  +++ |+#include <ostream>
+  250 | 
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:268:17: error: request for member ‘set’ in ‘phi’, which is of pointer type ‘_physxdriver_phi_t*’ (maybe you meant to use ‘->’ ?)
+  268 |                 phi.set(angle.pitch);
+      |                 ^~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:273:18: error: ‘cout’ is not a member of ‘std’
+  273 |                 std::cout << "motor angle vel 1: " << vel[1] << std::endl;
+      |                  ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:273:18: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:273:66: error: ‘endl’ is not a member of ‘std’
+  273 |                 std::cout << "motor angle vel 1: " << vel[1] << std::endl;
+      |                                                                  ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:273:66: note: ‘std::endl’ is defined in header ‘<ostream>’; did you forget to ‘#include <ostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:274:19: error: request for member ‘set’ in ‘d_phi’, which is of pointer type ‘_physxdriver_d_phi_t*’ (maybe you meant to use ‘->’ ?)
+  274 |                 d_phi.set(vel[1]);
+      |                   ^~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:288:18: error: ‘cout’ is not a member of ‘std’
+  288 |                 std::cout << "pendulum angle roll: " << angle.roll + 1.5707963 << std::endl;
+      |                  ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:288:18: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:288:84: error: ‘endl’ is not a member of ‘std’
+  288 |                 std::cout << "pendulum angle roll: " << angle.roll + 1.5707963 << std::endl;
+      |                                                                                    ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:288:84: note: ‘std::endl’ is defined in header ‘<ostream>’; did you forget to ‘#include <ostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:289:19: error: request for member ‘set’ in ‘theta’, which is of pointer type ‘_physxdriver_theta_t*’ (maybe you meant to use ‘->’ ?)
+  289 |                 theta.set(angle.roll + 1.5707963);
+      |                   ^~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:294:18: error: ‘cout’ is not a member of ‘std’
+  294 |                 std::cout << "pendulum angle vel 0: " << vel[0] << std::endl;
+      |                  ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:294:18: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:294:69: error: ‘endl’ is not a member of ‘std’
+  294 |                 std::cout << "pendulum angle vel 0: " << vel[0] << std::endl;
+      |                                                                     ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:294:69: note: ‘std::endl’ is defined in header ‘<ostream>’; did you forget to ‘#include <ostream>’?
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:295:21: error: request for member ‘set’ in ‘d_theta’, which is of pointer type ‘_physxdriver_d_theta_t*’ (maybe you meant to use ‘->’ ?)
+  295 |                 d_theta.set(vel[0]);
+      |                     ^~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf: In function ‘void _physxdriverreaction_function_2(void*)’:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:301:10: error: ‘cout’ is not a member of ‘std’
+  301 |         std::cout << "applied torque is " << -*u.get() * 50 << std::endl;
+      |          ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:301:1: note: ‘std::cout’ is defined in header ‘<iostream>’; did you forget to ‘#include <iostream>’?
+  300 |     reaction(u) {=
+  +++ |+#include <iostream>
+  301 |         std::cout << "applied torque is " << -*u.get() * 50 << std::endl;
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:301:46: error: request for member ‘get’ in ‘u’, which is of pointer type ‘_physxdriver_u_t*’ (maybe you meant to use ‘->’ ?)
+  301 |         std::cout << "applied torque is " << -*u.get() * 50 << std::endl;
+      |                                              ^~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:301:65: error: ‘endl’ is not a member of ‘std’
+  301 |         std::cout << "applied torque is " << -*u.get() * 50 << std::endl;
+      |                                                                 ^~~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:301:1: note: ‘std::endl’ is defined in header ‘<ostream>’; did you forget to ‘#include <ostream>’?
+  300 |     reaction(u) {=
+  +++ |+#include <ostream>
+  301 |         std::cout << "applied torque is " << -*u.get() * 50 << std::endl;
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:302:45: error: request for member ‘get’ in ‘u’, which is of pointer type ‘_physxdriver_u_t*’ (maybe you meant to use ‘->’ ?)
+  302 |         motorObject->addTorque(PxVec3(0.0f, -*u.get() * 50, 0.0f));
+      |                                             ^~~
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf: In function ‘void _physxdriverreaction_function_3(void*)’:
+/home/zekailin00/Desktop/PhysX/physx/snippets/snippethelloworld/lf-port/PhysxSimulation.lf:306:5: error: ‘environment’ was not declared in this scope; did you mean ‘environment_t’?
+  306 |         environment()->sync_shutdown();
+      |     ^   ~~~~~~~
+      |     environment_t
+gmake[2]: *** [CMakeFiles/PhysxSimulation.dir/build.make:104: CMakeFiles/PhysxSimulation.dir/_physxdriver.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:100: CMakeFiles/PhysxSimulation.dir/all] Error 2
+gmake: *** [Makefile:136: all] Error 2
+lfc: error:  failed with error code 2
+lfc: fatal error: Aborting due to 1 previous error.
