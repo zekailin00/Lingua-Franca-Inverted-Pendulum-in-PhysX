@@ -1,0 +1,148 @@
+/**
+ * A modal controller for a Furuta pendulum, based on the Ptolemy II model constructed by Johan Eker
+ * and described in this paper:
+ *
+ * J. Liu, J. Eker, J. W. Janneck, and E. A. Lee, “Realistic simulations of embedded control
+ * systems,” IFAC Proceedings Volumes, vol. 35, no. 1, pp. 391–396, 2002.
+ *
+ * @author Edward A. Lee
+ */
+target Cpp
+
+reactor PendulumController_(
+    h: double = 0.016,         // Sample interval
+    w0: double = 6.3,
+    k: double = 0.5,           // Energy multiplier to swing up.
+    n: double = 0.5,           // Bound on swing up control magnitude.
+    region1: double = 0.1,     // Region to exit SwingUp.
+    region2: double = 0.2,     // Region to exit Stabilize.
+    max_speed: double = 1.5,   // Speed to exit Catch.
+    ci1: double = -1.04945717118225,
+    ci2: double = -0.20432286791216,
+    ci3: double = -0.00735846749875,
+    ci4: double = -0.00735846749875,
+    si1: double = -1.70871686211144,
+    si2: double = -0.30395427746831,
+    si3: double = -0.03254225945714,
+    si4: double = -0.05808270221773,
+    phi2: double = -7.0124562) {
+  public preamble {=
+    #include <math.h>
+    #define PI 3.14159265
+    #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+    static double sign(double x) { // added static
+      return (x > 0.0) - (x < 0.0);
+    }
+    static double restrictAngle(double theta) { // added static
+      return((fmod(fabs(theta) + PI, 2 * PI) - PI) * sign(theta));
+    }
+  =}
+
+  input theta: double
+  input d_theta: double
+  input phi: double
+  input d_phi: double
+
+  output control: double
+  output modeID: double
+  output energy: double
+
+  state phi0: double = 0.0
+  state current_mode: int = 0
+  // SwingUp: 0
+  // Catch: 1
+  // Stabilize: 2
+
+  reaction(theta, d_theta) d_phi -> control, modeID, energy {=
+    if (current_mode == 0)
+    {
+      double th = restrictAngle(*theta.get());
+      double E = 0.5
+        * *d_theta.get()
+        * *d_theta.get()
+        / (w0 * w0)
+        + cos(th) - 1.0;
+      double c = sign(*d_theta.get() * cos(th));
+      double out = sign(E) * MIN(fabs(k * E), n) * c;
+      control.set(out); printf("Current control mode: %d\n", current_mode);
+      energy.set(E);
+      modeID.set(-1);
+    }
+  =}
+
+  reaction(theta) {=
+    if (current_mode == 0)
+    {
+      if (fabs(*theta.get()) < region1) {
+        current_mode = 1; // transition
+      }
+    }
+  =}
+
+  reaction(theta, d_theta, phi, d_phi) -> control, modeID, energy {=
+    if (current_mode == 1)
+    {
+      double th = restrictAngle(*theta.get());
+      control.set(-1.0 * (
+        th * ci1
+        + *d_theta.get() * ci2
+        + (*phi.get() - phi2) * ci3
+        + *d_phi.get() * ci4
+      )); printf("Current control mode: %d\n", current_mode);
+      modeID.set(0.0f);
+      double E = 0.5
+        * *d_theta.get()
+        * *d_theta.get()
+        / (w0 * w0)
+        + cos(th) - 1.0;
+      energy.set(E);
+    }
+  =}
+
+  reaction(phi, d_phi) {=
+    if (current_mode == 1)
+    {
+      if (fabs(*d_phi.get()) < max_speed) {
+        current_mode = 2; // transition
+        phi0 = *phi.get();
+      }
+    }
+  =}
+
+  reaction(theta, d_theta, phi, d_phi) -> control, modeID, energy {=
+    if (current_mode == 2)
+    {
+      double th = restrictAngle(*theta.get());
+      control.set(-1.0 * (
+        th * si1
+        + *d_theta.get() * si2
+        + (*phi.get() - phi0) * si3
+        + *d_phi.get() * si4
+      )); printf("Current control mode: %d\n", current_mode);
+      double E = 0.5
+        * *d_theta.get()
+        * *d_theta.get()
+        / (w0 * w0)
+        + cos(th) - 1.0;
+      energy.set(E);
+      modeID.set(1);
+    }
+  =}
+
+  reaction(theta) {=
+    if (current_mode == 2)
+    {
+      double th = restrictAngle(*theta.get());
+      if (fabs(th) > region2) {
+        current_mode = 0; // transition
+      }
+    }
+  =}
+
+}
+
+
+main reactor {
+  pendulumController = new PendulumController_()
+
+}

@@ -1,0 +1,7 @@
+src-gen/**
+share/**
+lib/**
+include/**
+c-test/**
+build/**
+bin/**

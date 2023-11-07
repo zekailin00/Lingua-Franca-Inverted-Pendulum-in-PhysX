@@ -1,0 +1,471 @@
+target Cpp {
+  cmake-include: "Hello.cmake"
+};
+
+reactor PhysxDriver {
+  private preamble {=
+    #define PX_PHYSX_STATIC_LIB
+    #include "SnippetRender.h"
+    #include "SnippetCamera.h"
+    #include "PxPhysicsAPI.h"
+    #define PVD_HOST "127.0.0.1"
+    using namespace physx;
+  
+    static PxDefaultAllocator	      	gAllocator;
+    static PxDefaultErrorCallback	    gErrorCallback;
+    static PxFoundation*	        	 	gFoundation = NULL;
+    static PxPhysics*		           		gPhysics	= NULL;
+    static PxDefaultCpuDispatcher*	  gDispatcher = NULL;
+    static PxScene*			           		gScene		= NULL;
+    static PxMaterial*		        		gMaterial	= NULL;
+    static PxPvd*			            		gPvd = NULL;
+  
+    static Snippets::Camera* sCamera;
+    static bool window_created = false;
+    static bool simulation_running = false;
+
+    static PxRigidDynamic* dynamicObject = NULL;
+
+    static void renderCallback()
+    {
+      window_created = true;
+
+      while (simulation_running) ;
+
+      Snippets::startRender(sCamera);
+
+      PxScene* scene;
+      PxGetPhysics().getScenes(&scene,1);
+      PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+      if(nbActors)
+      {
+        std::vector<PxRigidActor*> actors(nbActors);
+        scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
+        Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), true);
+      }
+
+      Snippets::finishRender();
+    }
+
+    static void renderCallback2()
+    {
+      simulation_running = true;
+      gScene->simulate(1.0f/60.0f);
+      gScene->fetchResults(true);
+      simulation_running = false;
+    }
+
+    static void cleanupPhysics(bool /*interactive*/)
+    {
+      PX_RELEASE(gScene);
+      PX_RELEASE(gDispatcher);
+      PX_RELEASE(gPhysics);
+      if(gPvd)
+      {
+        PxPvdTransport* transport = gPvd->getTransport();
+        gPvd->release();	gPvd = NULL;
+        PX_RELEASE(transport);
+      }
+      PX_RELEASE(gFoundation);
+      
+      printf("SnippetHelloWorld done.\n");
+    }
+
+    static void exitCallback(void)
+    {
+      delete sCamera;
+      cleanupPhysics(true);
+    }
+
+    static PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity=PxVec3(0))
+    {
+      PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *gMaterial, 10.0f);
+      dynamic->setAngularDamping(0.5f);
+      dynamic->setLinearVelocity(velocity);
+      gScene->addActor(*dynamic);
+      return dynamic;
+    }
+
+    static void createStack(const PxTransform& t, PxU32 size, PxReal halfExtent)
+    {
+      PxShape* shape = gPhysics->createShape(PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
+      for(PxU32 i=0; i<size;i++)
+      {
+        for(PxU32 j=0;j<size-i;j++)
+        {
+          PxTransform localTm(PxVec3(PxReal(j*2) - PxReal(size-i), PxReal(i*2+1), 0) * halfExtent);
+          PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
+          body->attachShape(*shape);
+          PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+          gScene->addActor(*body);
+        }
+      }
+      shape->release();
+    }
+
+  static void keyPress(unsigned char key, const PxTransform& camera)
+  {
+
+  }
+
+  // spherical joint limited to an angle of at most pi/4 radians (45 degrees)
+  static PxJoint* createLimitedSpherical(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1)
+  {
+    PxSphericalJoint* j = PxSphericalJointCreate(*gPhysics, a0, t0, a1, t1);
+    j->setLimitCone(PxJointLimitCone(PxPi/4, PxPi/4, 0.05f));
+    j->setSphericalJointFlag(PxSphericalJointFlag::eLIMIT_ENABLED, true);
+    return j;
+  }
+
+  // fixed, breakable joint
+  static PxJoint* createBreakableFixed(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1)
+  {
+    PxFixedJoint* j = PxFixedJointCreate(*gPhysics, a0, t0, a1, t1);
+    j->setBreakForce(1000, 100000);	
+    j->setConstraintFlag(PxConstraintFlag::eDRIVE_LIMITS_ARE_FORCES, true);
+    j->setConstraintFlag(PxConstraintFlag::eDISABLE_PREPROCESSING, true);
+    return j;
+  }
+
+  // D6 joint with a spring maintaining its position
+  static PxJoint* createDampedD6(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1)
+  {
+    // PxD6Joint* j = PxD6JointCreate(*gPhysics, a0, t0, a1, t1);
+    // j->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+    // j->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+    // j->setMotion(PxD6Axis::eTWIST, PxD6Motion::eFREE);
+    // j->setDrive(PxD6Drive::eSLERP, PxD6JointDrive(0, 1000, FLT_MAX, true));
+
+    PxRevoluteJoint* j = PxRevoluteJointCreate(*gPhysics, a0, t0, a1, t1);
+    // j->setDriveVelocity(-2.0f);
+    // j->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
+    return j;
+  }
+
+  typedef PxJoint* (*JointCreateFunction)(PxRigidActor* a0, const PxTransform& t0, PxRigidActor* a1, const PxTransform& t1);
+
+  static void printTF(const PxTransform& t)
+  {
+    std::cout << "<x,y,z>: " << t.p.x << "|" << t.p.y << "|" << t.p.z << std::endl;
+    std::cout << "<w,x,y,z>: " << t.q.w << "|" << t.q.x << "|" << t.q.y << "|" << t.q.z << std::endl;
+  }
+
+  static void createChain(const PxTransform& t, PxU32 length, const PxGeometry& g, PxReal separation, JointCreateFunction createJoint)
+  {
+    PxVec3 offset(0, 0, separation/2);
+    PxTransform localTm(offset);
+    PxRigidDynamic* prev = NULL;
+
+    std::cout << "localTm\n";
+    printTF(localTm);
+
+    for(PxU32 i=0;i<length;i++)
+    {
+      std::cout << "Insted";
+      printTF(t*localTm);
+      std::cout << "local1";
+      printTF(prev ? PxTransform(offset) : t);
+      std::cout << "local2";
+      printTF(PxTransform(-offset));
+
+      PxRigidDynamic* current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
+      (*createJoint)(prev, prev ? PxTransform(offset) : t, current, PxTransform(-offset));
+      gScene->addActor(*current);
+      prev = current;
+      localTm.p.z += separation;
+
+      dynamicObject = current;
+    }
+  }
+
+  struct Quaternion {
+    double w, x, y, z;
+  };
+
+  struct EulerAngles {
+      double roll, pitch, yaw;
+  };
+
+  // this implementation assumes normalized quaternion
+  // converts to Euler angles in 3-2-1 sequence
+  EulerAngles ToEulerAngles(Quaternion q) {
+      EulerAngles angles;
+
+      // roll (x-axis rotation)
+      double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+      double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+      angles.roll = std::atan2(sinr_cosp, cosr_cosp);
+
+      // pitch (y-axis rotation)
+      double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+      double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+      angles.pitch = 2 * std::atan2(sinp, cosp) - M_PI / 2;
+
+      // yaw (z-axis rotation)
+      double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+      double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+      angles.yaw = std::atan2(siny_cosp, cosy_cosp);
+
+      return angles;
+  }
+
+  =}
+
+  output initalized: void
+  input quit: void
+
+  state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+  state count: unsigned = 0
+  state thread: std::thread
+
+  timer step_size(0, 16ms)
+  timer torque_time(0, 5s)
+
+  state stackZ: float = 10
+  input new_stack: void
+  input fire: void
+  input impulse: float
+
+  output theta:float
+
+  physical action keyboard_input: {=unsigned char=}
+
+  reaction(startup) -> initalized, keyboard_input {=
+
+    sCamera = new Snippets::Camera(PxVec3(50.0f, 50.0f, 50.0f), PxVec3(-0.6f,-0.2f,-0.7f));
+
+    gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+
+    gPvd = PxCreatePvd(*gFoundation);
+    PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
+    gPvd->connect(*transport,PxPvdInstrumentationFlag::eALL);
+
+    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(),true,gPvd);
+
+    PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+    sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
+    gDispatcher = PxDefaultCpuDispatcherCreate(2);
+    sceneDesc.cpuDispatcher	= gDispatcher;
+    sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
+    gScene = gPhysics->createScene(sceneDesc);
+
+    PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+    if(pvdClient)
+    {
+      pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+      pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+      pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+    }
+    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+
+    PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
+    gScene->addActor(*groundPlane);
+
+    // for(PxU32 i=0;i<5;i++)
+    //   createStack(PxTransform(PxVec3(0,0,stackZ-=10.0f)), 10, 2.0f);
+
+    // createChain(PxTransform(PxVec3(0.0f, 20.0f, 0.0f)), 5, PxBoxGeometry(0.5f, 0.5f, 2.0f), 4.0f, createLimitedSpherical);
+    // createChain(PxTransform(PxVec3(0.0f, 20.0f, -10.0f)), 5, PxBoxGeometry(0.5f, 0.5f, 2.0f), 4.0f, createBreakableFixed);
+    // createChain(PxTransform(PxVec3(0.0f, 20.0f, -20.0f)), 1, PxBoxGeometry(0.5f, 0.5f, 6.0f), 12.0f, createDampedD6);
+
+    {
+      PxReal separation = 12.0f;
+      PxTransform t = PxTransform(PxVec3(0.0f, 20.0f, -20.0f));
+      PxBoxGeometry g = PxBoxGeometry(6.0f, 0.5f, 0.5f);
+
+      PxVec3 offset(separation/2, 0, 0);
+      PxVec3 offset2;
+      PxTransform localTm(offset);
+      PxRigidDynamic* prev = NULL;
+      PxRigidDynamic* current = NULL;
+
+      std::cout << "Insted";
+      printTF(t*localTm);
+      std::cout << "local1";
+      printTF(prev ? PxTransform(offset) : t);
+      std::cout << "local2";
+      printTF(PxTransform(-offset));
+
+      offset = PxVec3(separation/2, 0, 0);
+      localTm = PxTransform(offset);
+      t = PxTransform(PxVec3(-0.5f, 20.0f, -20.0f));
+      g = PxBoxGeometry(1.0f, 0.5f, 0.5f);
+
+      current = PxCreateDynamic(*gPhysics, t, g, *gMaterial, 1.0f);
+      PxRevoluteJoint* j = PxRevoluteJointCreate(*gPhysics, NULL, PxTransform(PxVec3(-0.5f, 20.0f, -20.0f), PxQuat(3.1415926/2, PxVec3(0,0,-1))), current, PxTransform(PxQuat(3.1415926/2, PxVec3(0,0,-1)))); // rotate x to y, same pos
+      gScene->addActor(*current);
+      prev = current;
+      dynamicObject = current; // TODO:
+
+      //test
+      j->setDriveVelocity(0.5f);
+      j->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
+
+      offset = PxVec3(separation/2, 0, 0);
+      localTm = PxTransform(offset);
+      offset2 = PxVec3(1, 0, 0);
+      t = PxTransform(PxVec3(0.0f, 20.0f, -20.0f));
+      g = PxBoxGeometry(6.0f, 0.1f, 0.1f);
+
+      current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
+      PxRevoluteJointCreate(*gPhysics, prev, PxTransform(offset2), current, PxTransform(-offset));
+      gScene->addActor(*current);
+      prev = current;
+    
+      localTm.p.x += separation/2;
+      localTm.p.z += separation/2;
+      g = PxBoxGeometry(0.1f, 0.1f, 6.0f);
+      offset2 = PxVec3(separation/2, 0.0, 0.5);
+      offset = PxVec3(0, 0, separation/2);
+
+      current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
+      PxFixedJointCreate(*gPhysics, prev, PxTransform(offset2), current, PxTransform(-offset));
+      gScene->addActor(*current);
+      prev = current;
+    }
+
+    thread = std::thread([&]{
+      Snippets::setupDefault("PhysX Snippet HelloWorld", sCamera, keyPress, renderCallback, exitCallback);
+      glutMainLoop();
+    });
+
+    // glutMainLoop();
+    // request the first prompt
+    initalized.set();
+  =}
+
+  reaction(new_stack) {=
+    createStack(PxTransform(PxVec3(0,0,stackZ-=10.0f)), 10, 2.0f);
+  =}
+
+  reaction(fire) {=
+    PxTransform camera{};
+    createDynamic(camera, PxSphereGeometry(3.0f), camera.rotate(PxVec3(0,0,-1))*200);
+  =}
+
+  reaction(step_size) -> theta {=
+    if (window_created)
+    {
+      // std::cout << "Logical time is: " << get_logical_time() << std::endl;
+      renderCallback2();
+
+      PxTransform transform = dynamicObject->getGlobalPose();
+
+      Quaternion q{
+        transform.q.w,
+        transform.q.x,
+        transform.q.y,
+        transform.q.z
+      };
+
+      EulerAngles angle = ToEulerAngles(q);
+      std::cout << "angle roll: " << angle.roll << std::endl;
+      theta.set(angle.roll);
+    }
+  =}
+
+  reaction(impulse) {=
+    std::cout << "impulse is " << *impulse.get() << std::endl;
+    PxRigidBodyExt::addLocalForceAtLocalPos(*dynamicObject, PxVec3(0, *impulse.get(), 0), PxVec3(0,0,6), PxForceMode::eIMPULSE); 
+  =}
+
+  reaction(torque_time) {=
+    // std::cout << "\n\n\n\n\nForce added: " << get_logical_time() << std::endl;
+    // PxRigidBodyExt::addLocalForceAtLocalPos(*dynamicObject, PxVec3(0, 500, 0), PxVec3(0,0,6), PxForceMode::eIMPULSE);
+  =}
+
+  reaction(quit) {=
+    environment()->sync_shutdown();
+  =}
+
+  reaction(shutdown) {=
+    PX_RELEASE(gScene);
+    PX_RELEASE(gDispatcher);
+    PX_RELEASE(gPhysics);
+    if(gPvd)
+    {
+      PxPvdTransport* transport = gPvd->getTransport();
+      gPvd->release();	gPvd = NULL;
+      PX_RELEASE(transport);
+    }
+    PX_RELEASE(gFoundation);
+    
+    printf("SnippetHelloWorld done.\n");
+  =}
+}  
+
+reactor KeyBoard {
+
+  state thread: std::thread
+  state terminate: std::atomic<bool> = false
+  physical action keyboard_input: char
+
+  output fire: void
+  output quit: void
+  output add_cube: void
+
+  // reaction(startup) -> keyboard_input {=
+  //   // Start the thread that listens for keyboard input.
+  //   thread = std::thread([&] () {
+  //     int c{0};
+  //     while(!terminate.load()) {
+  //       c = getchar();
+  //       keyboard_input.schedule(c);
+  //     }
+  //   });
+  // =}
+
+  reaction(keyboard_input) -> fire, quit, add_cube {=
+    char key = *keyboard_input.get();
+    if(key == '\n') {
+      fire.set();
+    } 
+    else if(key == 'n') {
+      add_cube.set();
+    } else if (key == EOF) {
+      quit.set();
+    }
+  =}
+
+  reaction(shutdown) {=
+    terminate.store(true);
+    thread.join();
+  =}
+}
+
+reactor Control {
+
+  input theta: float
+  output impulse: float
+  state integral: float = 0
+  state err_prev: float = 0
+
+  reaction(theta) -> impulse {=
+    const float K_P = 1.0;
+    const float K_I = 0;
+    const float K_D = 0.7;
+
+    float error = *theta.get() + 1.57;
+    integral = integral + error * 0.016;
+    float derivative = (error - err_prev);
+    float move_deg = K_P * error + K_I * integral + K_D * derivative;
+
+    std::cout << "Error: " << error << std::endl;
+    err_prev = error;
+    // impulse.set(move_deg * 3); //TODOe
+  =}
+}
+
+
+main reactor {
+    physx = new PhysxDriver()
+    controller = new KeyBoard()
+    control = new Control()
+
+    physx.theta -> control.theta
+    control.impulse -> physx.impulse
+
+    controller.fire -> physx.fire
+    controller.quit -> physx.quit
+    controller.add_cube -> physx.new_stack
+}

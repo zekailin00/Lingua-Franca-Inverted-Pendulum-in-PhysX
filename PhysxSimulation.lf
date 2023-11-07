@@ -1,0 +1,342 @@
+target CCpp {
+    cmake-include: "Hello.cmake"
+  };
+  
+reactor PhysxDriver {
+    private preamble {=
+
+        #define PX_PHYSX_STATIC_LIB
+        #include "SnippetRender.h"
+        #include "SnippetCamera.h"
+        #include "PxPhysicsAPI.h"
+        #define PVD_HOST "127.0.0.1"
+        using namespace physx;
+
+        static PxDefaultAllocator	      	    gAllocator;
+        static PxDefaultErrorCallback	        gErrorCallback;
+        static PxFoundation*	        	    gFoundation = NULL;
+        static PxPhysics*		           		gPhysics	= NULL;
+        static PxDefaultCpuDispatcher*	        gDispatcher = NULL;
+        static PxScene*			           		gScene		= NULL;
+        static PxMaterial*		        		gMaterial	= NULL;
+        static PxPvd*			            	gPvd = NULL;
+
+        static Snippets::Camera* sCamera;
+        static bool window_created = false;
+        static bool simulation_running = false;
+
+        static PxRigidDynamic* motorObject = NULL;
+        static PxRigidDynamic* pendulumObject = NULL;
+
+        static void renderCallback()
+        {
+            window_created = true;
+
+            while (simulation_running) ;
+
+            Snippets::startRender(sCamera);
+
+            PxScene* scene;
+            PxGetPhysics().getScenes(&scene,1);
+            PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+            if(nbActors)
+            {
+                std::vector<PxRigidActor*> actors(nbActors);
+                scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
+                Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), true);
+            }
+
+            Snippets::finishRender();
+        }
+
+        static void renderCallback2()
+        {
+            simulation_running = true;
+            gScene->simulate(1.0f/60.0f);
+            gScene->fetchResults(true);
+            simulation_running = false;
+        }
+
+        static void cleanupPhysics(bool /*interactive*/)
+        {
+            PX_RELEASE(gScene);
+            PX_RELEASE(gDispatcher);
+            PX_RELEASE(gPhysics);
+            if(gPvd)
+            {
+                PxPvdTransport* transport = gPvd->getTransport();
+                gPvd->release();	gPvd = NULL;
+                PX_RELEASE(transport);
+            }
+            PX_RELEASE(gFoundation);
+            
+            printf("SnippetHelloWorld done.\n");
+        }
+
+        static void exitCallback(void)
+        {
+            delete sCamera;
+            cleanupPhysics(true);
+        }
+
+        static PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity=PxVec3(0))
+        {
+            PxRigidDynamic* dynamic = PxCreateDynamic(*gPhysics, t, geometry, *gMaterial, 10.0f);
+            dynamic->setAngularDamping(0.5f);
+            dynamic->setLinearVelocity(velocity);
+            gScene->addActor(*dynamic);
+            return dynamic;
+        }
+
+        static void keyPress(unsigned char key, const PxTransform& camera)
+        {
+
+        }
+    
+        static void printTF(const PxTransform& t)
+        {
+            std::cout << "<x,y,z>: " << t.p.x << "|" << t.p.y << "|" << t.p.z << std::endl;
+            std::cout << "<w,x,y,z>: " << t.q.w << "|" << t.q.x << "|" << t.q.y << "|" << t.q.z << std::endl;
+        }
+    
+        struct Quaternion {
+            double w, x, y, z;
+        };
+    
+        struct EulerAngles {
+            double roll, pitch, yaw;
+        };
+  
+        // this implementation assumes normalized quaternion
+        // converts to Euler angles in 3-2-1 sequence
+        EulerAngles ToEulerAngles(Quaternion q) {
+            EulerAngles angles;
+    
+            // roll (x-axis rotation)
+            double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+            double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+            angles.roll = std::atan2(sinr_cosp, cosr_cosp);
+    
+            // pitch (y-axis rotation)
+            double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+            double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+            angles.pitch = 2 * std::atan2(sinp, cosp) - M_PI / 2;
+    
+            // yaw (z-axis rotation)
+            double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+            double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+            angles.yaw = std::atan2(siny_cosp, cosy_cosp);
+    
+            return angles;
+        }
+    =}
+  
+    output initalized: void
+    input quit: void
+  
+    state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+    state count: unsigned = 0
+    state thread: std::thread
+  
+    timer step_size(0, 16ms)
+  
+    state stackZ: float = 10
+    input u: double
+  
+    output theta: double
+    output phi: double
+    output d_theta: double
+    output d_phi: double
+  
+    physical action keyboard_input: {=unsigned char=}
+  
+    reaction(startup) -> initalized, keyboard_input {=
+  
+        sCamera = new Snippets::Camera(PxVec3(50.0f, 50.0f, 50.0f), PxVec3(-0.6f,-0.2f,-0.7f));
+
+        gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+
+        gPvd = PxCreatePvd(*gFoundation);
+        PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
+        gPvd->connect(*transport,PxPvdInstrumentationFlag::eALL);
+
+        gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(),true,gPvd);
+
+        PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+        sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
+        gDispatcher = PxDefaultCpuDispatcherCreate(2);
+        sceneDesc.cpuDispatcher	= gDispatcher;
+        sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
+        gScene = gPhysics->createScene(sceneDesc);
+
+        PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+        if(pvdClient)
+        {
+            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+        }
+
+        gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+
+        PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
+        gScene->addActor(*groundPlane);
+
+        {
+            PxReal separation = 12.0f;
+            PxTransform t = PxTransform(PxVec3(0.0f, 20.0f, -20.0f));
+            PxBoxGeometry g = PxBoxGeometry(6.0f, 0.5f, 0.5f);
+
+            PxVec3 offset(separation/2, 0, 0);
+            PxVec3 offset2;
+            PxTransform localTm(offset);
+            PxRigidDynamic* prev = NULL;
+            PxRigidDynamic* current = NULL;
+
+            std::cout << "Insted";
+            printTF(t*localTm);
+            std::cout << "local1";
+            printTF(prev ? PxTransform(offset) : t);
+            std::cout << "local2";
+            printTF(PxTransform(-offset));
+
+            offset = PxVec3(separation/2, 0, 0);
+            localTm = PxTransform(offset);
+            t = PxTransform(PxVec3(-0.5f, 20.0f, -20.0f));
+            g = PxBoxGeometry(1.0f, 0.5f, 0.5f);
+
+            current = PxCreateDynamic(*gPhysics, t, g, *gMaterial, 1.0f);
+            PxRevoluteJointCreate(*gPhysics, NULL, PxTransform(PxVec3(-0.5f, 20.0f, -20.0f), PxQuat(3.1415926/2, PxVec3(0,0,-1))), current, PxTransform(PxQuat(3.1415926/2, PxVec3(0,0,-1)))); // rotate x to y, same pos
+            gScene->addActor(*current);
+            prev = current;
+            motorObject = current; // TODO:
+
+            offset = PxVec3(separation/2, 0, 0);
+            localTm = PxTransform(offset);
+            offset2 = PxVec3(1, 0, 0);
+            t = PxTransform(PxVec3(0.0f, 20.0f, -20.0f));
+            g = PxBoxGeometry(6.0f, 0.08f, 0.08f);
+
+            current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
+            PxRevoluteJoint* j = PxRevoluteJointCreate(*gPhysics, prev, PxTransform(offset2), current, PxTransform(-offset));
+            gScene->addActor(*current);
+            prev = current;
+            pendulumObject = current;
+
+            // //test
+            // j->setDriveVelocity(2.0f);
+            // j->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
+
+            localTm.p.x += separation/2;
+            localTm.p.z += separation/2;
+            g = PxBoxGeometry(0.08f, 0.08f, 6.0f);
+            offset2 = PxVec3(separation/2, 0.0, 0.5);
+            offset = PxVec3(0, 0, separation/2);
+
+            current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
+            PxFixedJointCreate(*gPhysics, prev, PxTransform(offset2), current, PxTransform(-offset));
+            gScene->addActor(*current);
+            prev = current;
+        }
+
+        thread = std::thread([&]{
+            Snippets::setupDefault("PhysX Snippet HelloWorld", sCamera, keyPress, renderCallback, exitCallback);
+            glutMainLoop();
+        });
+
+        initalized.set();
+    =}
+  
+
+    reaction(step_size) -> theta, phi, d_theta, d_phi {=
+        if (window_created)
+        {
+            renderCallback2();
+    
+            {
+                PxTransform transform = motorObject->getGlobalPose();
+        
+                Quaternion q{
+                    transform.q.w,
+                    transform.q.x,
+                    transform.q.y,
+                    transform.q.z
+                };
+
+                EulerAngles angle = ToEulerAngles(q);
+                std::cout << "\rmotor angle pitch: " << angle.pitch << std::endl;
+                phi.set(angle.pitch);
+            }
+
+            {
+                PxVec3 vel = motorObject->getAngularVelocity();
+                std::cout << "motor angle vel 1: " << vel[1] << std::endl;
+                d_phi.set(vel[1]);
+            }
+
+            {
+                PxTransform transform = pendulumObject->getGlobalPose();
+        
+                Quaternion q{
+                    transform.q.w,
+                    transform.q.x,
+                    transform.q.y,
+                    transform.q.z
+                };
+
+                EulerAngles angle = ToEulerAngles(q);
+                std::cout << "pendulum angle roll: " << angle.roll + 1.5707963 << std::endl;
+                theta.set(angle.roll + 1.5707963);
+            }
+
+            {
+                PxVec3 vel = pendulumObject->getAngularVelocity();
+                std::cout << "pendulum angle vel 0: " << vel[0] << std::endl;
+                d_theta.set(vel[0]);
+            }
+        }
+    =}
+
+    reaction(u) {=
+        std::cout << "applied torque is " << -*u.get() * 50 << std::endl;
+        motorObject->addTorque(PxVec3(0.0f, -*u.get() * 50, 0.0f));
+    =}
+
+    reaction(quit) {=
+        environment()->sync_shutdown();
+    =}
+
+    reaction(shutdown) {=
+        PX_RELEASE(gScene);
+        PX_RELEASE(gDispatcher);
+        PX_RELEASE(gPhysics);
+        if(gPvd)
+        {
+            PxPvdTransport* transport = gPvd->getTransport();
+            gPvd->release();	gPvd = NULL;
+            PX_RELEASE(transport);
+        }
+        PX_RELEASE(gFoundation);
+        
+        printf("SnippetHelloWorld done.\n");
+    =}
+}
+
+
+reactor Actuator {
+    timer t(0, 50msec)
+
+    output torque: double
+
+    reaction(t) -> torque {=
+        // printf("appled torque\n");
+        // torque.set(100);
+    =}
+}
+
+main reactor {
+    physxDriver = new PhysxDriver()
+    actuator = new Actuator()
+
+    actuator.torque -> physxDriver.u
+}
