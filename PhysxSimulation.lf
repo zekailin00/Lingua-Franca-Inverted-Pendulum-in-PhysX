@@ -1,4 +1,4 @@
-target CCpp {
+target Cpp {
     cmake-include: "Hello.cmake"
   };
   
@@ -27,6 +27,7 @@ reactor PhysxDriver {
 
         static PxRigidDynamic* motorObject = NULL;
         static PxRigidDynamic* pendulumObject = NULL;
+        static PxRigidDynamic* armObject = NULL;
 
         static void renderCallback()
         {
@@ -221,22 +222,25 @@ reactor PhysxDriver {
             PxRevoluteJoint* j = PxRevoluteJointCreate(*gPhysics, prev, PxTransform(offset2), current, PxTransform(-offset));
             gScene->addActor(*current);
             prev = current;
-            pendulumObject = current;
+            armObject = current;
 
             // //test
+            // j->setLocalPose(PxJointActorIndex::eACTOR1, PxTransform(-offset, PxQuat(3.14, PxVec3(1,0,0))));
             // j->setDriveVelocity(2.0f);
             // j->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
 
             localTm.p.x += separation/2;
-            localTm.p.z += separation/2;
-            g = PxBoxGeometry(0.08f, 0.08f, 6.0f);
-            offset2 = PxVec3(separation/2, 0.0, 0.5);
-            offset = PxVec3(0, 0, separation/2);
+            localTm.p.y += separation/2;
+            // localTm.p.z += separation/2;
+            g = PxBoxGeometry(0.08f, 6.0f, 0.08f);
+            offset2 = PxVec3(separation/2, 0.0, 0.0);
+            offset = PxVec3(0, separation/2, 0);
 
             current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
             PxFixedJointCreate(*gPhysics, prev, PxTransform(offset2), current, PxTransform(-offset));
             gScene->addActor(*current);
             prev = current;
+            pendulumObject = current;
         }
 
         thread = std::thread([&]{
@@ -275,18 +279,27 @@ reactor PhysxDriver {
             }
 
             {
-                PxTransform transform = pendulumObject->getGlobalPose();
-        
-                Quaternion q{
-                    transform.q.w,
-                    transform.q.x,
-                    transform.q.y,
-                    transform.q.z
-                };
+                PxTransform aTransform = armObject->getGlobalPose();
+                float armPlaneAngle = std::atan(aTransform.p.x / (aTransform.p.z + 20));
+                printTF(aTransform);
 
-                EulerAngles angle = ToEulerAngles(q);
-                std::cout << "pendulum angle roll: " << angle.roll + 1.5707963 << std::endl;
-                theta.set(angle.roll + 1.5707963);
+                PxTransform pTransform = pendulumObject->getGlobalPose();
+                printTF(pTransform);
+                float planeDegree = std::atan(pTransform.p.x / (pTransform.p.z + 20));
+
+                float range = std::min(1.0f, (float)std::max<float>(-1.0f, (pTransform.p.y - 20.0)/6.5));
+                float angle = std::asin(range) - std::numbers::pi / 2;
+                if (armPlaneAngle < planeDegree)
+                    angle *= -1;
+                
+                std::cout << "pendulum plane angle: " << planeDegree << std::endl;
+                std::cout << "arm plane angle: " << armPlaneAngle << std::endl;
+                std::cout << "arm is greater: " << (armPlaneAngle > angle) << std::endl;
+                std::cout << "pendulum angle: " << angle << std::endl;
+
+                if (isnan(angle))
+                    exit(0);
+                theta.set(angle);
             }
 
             {
@@ -298,8 +311,8 @@ reactor PhysxDriver {
     =}
 
     reaction(u) {=
-        std::cout << "applied torque is " << -*u.get() * 50 << std::endl;
-        motorObject->addTorque(PxVec3(0.0f, -*u.get() * 50, 0.0f));
+        std::cout << "applied torque is " << *u.get() * 300 << std::endl;
+        motorObject->addTorque(PxVec3(0.0f, *u.get() * 300, 0.0f));
     =}
 
     reaction(quit) {=

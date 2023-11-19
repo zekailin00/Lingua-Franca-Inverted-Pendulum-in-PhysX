@@ -14,17 +14,17 @@ reactor PendulumController_(
     w0: double = 6.3,
     k: double = 0.5,           // Energy multiplier to swing up.
     n: double = 0.5,           // Bound on swing up control magnitude.
-    region1: double = 0.1,     // Region to exit SwingUp.
-    region2: double = 0.2,     // Region to exit Stabilize.
+    region1: double = 0.6,     // Region to exit SwingUp.
+    region2: double = 0.8,     // Region to exit Stabilize.
     max_speed: double = 1.5,   // Speed to exit Catch.
     ci1: double = -1.04945717118225,
     ci2: double = -0.20432286791216,
     ci3: double = -0.00735846749875,
     ci4: double = -0.00735846749875,
     si1: double = -1.70871686211144,
-    si2: double = -0.30395427746831,
+    si2: double = -1.0395427746831,
     si3: double = -0.03254225945714,
-    si4: double = -0.05808270221773,
+    si4: double = -0.10808270221773,
     phi2: double = -7.0124562) {
   public preamble {=
     #include <math.h>
