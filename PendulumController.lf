@@ -113,6 +113,10 @@ reactor PendulumController_(
     if (current_mode == 2)
     {
       double th = restrictAngle(*theta.get());
+      printf("theta: %f\n", th);
+      printf("d_theta: %f\n", *d_theta.get());
+      printf("phi: %f\n", *phi.get());
+      printf("d_phi: %f\n", *d_phi.get());
       control.set(-1.0 * (
         th * si1
         + *d_theta.get() * si2

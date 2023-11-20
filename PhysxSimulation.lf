@@ -229,12 +229,16 @@ reactor PhysxDriver {
             // j->setDriveVelocity(2.0f);
             // j->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
 
+            // localTm.p.x += separation/2;
+            // localTm.p.y += separation/2;
+            // g = PxBoxGeometry(0.08f, 6.0f, 0.08f);
+            // offset2 = PxVec3(separation/2, 0.0, 0.0);
+            // offset = PxVec3(0, separation/2, 0);
             localTm.p.x += separation/2;
-            localTm.p.y += separation/2;
-            // localTm.p.z += separation/2;
-            g = PxBoxGeometry(0.08f, 6.0f, 0.08f);
-            offset2 = PxVec3(separation/2, 0.0, 0.0);
-            offset = PxVec3(0, separation/2, 0);
+            localTm.p.z += separation/2;
+            g = PxBoxGeometry(0.08f, 0.08f, 6.0f);
+            offset2 = PxVec3(separation/2, 0.0, 0.5);
+            offset = PxVec3(0, 0, separation/2);
 
             current = PxCreateDynamic(*gPhysics, t*localTm, g, *gMaterial, 1.0f);
             PxFixedJointCreate(*gPhysics, prev, PxTransform(offset2), current, PxTransform(-offset));
