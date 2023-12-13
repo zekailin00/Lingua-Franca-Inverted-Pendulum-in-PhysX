@@ -22,8 +22,8 @@ reactor PendulumController_(
     ci3: double = -0.00735846749875,
     ci4: double = -0.00735846749875,
     si1: double = -1.70871686211144,
-    si2: double = -1.0395427746831,
-    si3: double = -0.03254225945714,
+    si2: double = -0.0395427746831,
+    si3: double = -0.06254225945714,
     si4: double = -0.10808270221773,
     phi2: double = -7.0124562) {
   public preamble {=
@@ -34,7 +34,7 @@ reactor PendulumController_(
       return (x > 0.0) - (x < 0.0);
     }
     static double restrictAngle(double theta) { // added static
-      return((fmod(fabs(theta) + PI, 2 * PI) - PI) * sign(theta));
+      return theta;
     }
   =}
 
@@ -47,7 +47,7 @@ reactor PendulumController_(
   output modeID: double
   output energy: double
 
-  state phi0: double = 0.0
+  state phi0: double = 1.57
   state current_mode: int = 0
   // SwingUp: 0
   // Catch: 1
