@@ -32,20 +32,6 @@ reactor PhysxDriver {
 
         std::mutex mtx;
 
-        // PxTransform center = PxTransform(PxVec3(-48.0f, 49.0f, -48.0f));
-        // float sideLength = 0.05;
-        // float motorWeight = 0.23328;
-
-        // float armLength = 0.117;
-        // float armWeight = 0.541;
-
-        // float pendulumLength = 0.3716;
-        // float pendulumWeight = 0.000176;
-        // float tipWeight = 0.001f;
-
-        // float initialTheta = -3.1415/2;
-        // float forceScale = 1.0f;
-
         PxTransform center = PxTransform(PxVec3(0.0f, 10.0f, 0.0f));
         float sideLength = 1;
         float motorWeight = 0.008;
@@ -57,23 +43,17 @@ reactor PhysxDriver {
         float pendulumWeight = 0.001;
         float tipWeight = 0.001f;
 
-        float initialTheta = +3.1415/2 - 0.2;
-        float forceScale = -300.0f;
+        // float initialTheta = +3.1415/2 - 0.2;
+        // float forceScale = -300.0f;
+        // bool unitDensity = true;
+
+        float initialTheta = +3.1415/2 - 1.5;
+        float forceScale = -2000.0f;
         bool unitDensity = true;
 
-        // PxTransform center = PxTransform(PxVec3(-48.0f, 49.0f, -48.0f));
-        // float sideLength = 0.05;
-        // float motorWeight = 0.0023328;
-
-        // float armLength = 0.153;
-        // float armWeight = 32.95;
-
-        // float pendulumLength = 0.863;
-        // float pendulumWeight = 0.0147;
-        // float tipWeight = 0.2025f;
-
-        // float initialTheta = 3.1415/2;
-        // float forceScale = 10.0f;
+        // float initialTheta = +3.1415/2 - 1.5;
+        // float forceScale = -1000.0f;
+        // bool unitDensity = true;
 
         enum SceneType
         {
