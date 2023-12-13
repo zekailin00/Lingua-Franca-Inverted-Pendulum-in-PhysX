@@ -9,6 +9,7 @@ reactor PhysxDriver {
         #include "SnippetRender.h"
         #include "SnippetCamera.h"
         #include "PxPhysicsAPI.h"
+        #include <mutex>
         #define PVD_HOST "127.0.0.1"
         using namespace physx;
 
@@ -23,11 +24,13 @@ reactor PhysxDriver {
 
         static Snippets::Camera* sCamera = new Snippets::Camera(PxVec3(50.0f, 50.0f, 50.0f), PxVec3(-0.6f,-0.2f,-0.7f));
         static bool window_created = false;
-        static bool simulation_running = false;
+        static bool simulation_displayed = false;
 
         static PxRigidBody* motorObject = NULL;
         static PxRigidBody* pendulumObject = NULL;
         static PxRigidBody* armObject = NULL;
+
+        std::mutex mtx;
 
         // PxTransform center = PxTransform(PxVec3(-48.0f, 49.0f, -48.0f));
         // float sideLength = 0.05;
@@ -75,7 +78,6 @@ reactor PhysxDriver {
         {
             JointNoWeight,
             JointWeight,
-            ArticulationNoWeight,
             ArticulationWeight,
         };
         SceneType sceneType = ArticulationWeight;
@@ -84,43 +86,48 @@ reactor PhysxDriver {
         {
             window_created = true;
 
-            while (simulation_running) ;
-
-            Snippets::startRender(sCamera);
-
-            PxScene* scene;
-            PxGetPhysics().getScenes(&scene,1);
-            PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
-            if(nbActors)
+            if (simulation_displayed == false)
             {
-                std::vector<PxRigidActor*> actors(nbActors);
-                scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
-                Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), true);
+                mtx.lock();
+                Snippets::startRender(sCamera);
+
+                PxScene* scene;
+                PxGetPhysics().getScenes(&scene,1);
+                PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+                if(nbActors)
+                {
+                    std::vector<PxRigidActor*> actors(nbActors);
+                    scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
+                    Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), true);
+                }
+
+                const PxVec3 rcaColor(0.6f*0.75f, 0.8f*0.75f, 1.0f*0.75f);
+                PxU32 nbArticulations = scene->getNbArticulations();
+                for(PxU32 i=0;i<nbArticulations;i++)
+                {
+                    PxArticulationReducedCoordinate* articulation;
+                    scene->getArticulations(&articulation, 1, i);
+
+                    const PxU32 nbLinks = articulation->getNbLinks();
+                    std::vector<PxArticulationLink*> links(nbLinks);
+                    articulation->getLinks(&links[0], nbLinks);
+
+                    Snippets::renderActors(reinterpret_cast<PxRigidActor**>(&links[0]), static_cast<PxU32>(links.size()), true, rcaColor);
+                }
+
+                Snippets::finishRender();
+                simulation_displayed = true;
+                mtx.unlock();
             }
-
-            const PxVec3 rcaColor(0.6f*0.75f, 0.8f*0.75f, 1.0f*0.75f);
-            PxU32 nbArticulations = scene->getNbArticulations();
-            for(PxU32 i=0;i<nbArticulations;i++)
-            {
-                PxArticulationReducedCoordinate* articulation;
-                scene->getArticulations(&articulation, 1, i);
-
-                const PxU32 nbLinks = articulation->getNbLinks();
-                std::vector<PxArticulationLink*> links(nbLinks);
-                articulation->getLinks(&links[0], nbLinks);
-
-                Snippets::renderActors(reinterpret_cast<PxRigidActor**>(&links[0]), static_cast<PxU32>(links.size()), true, rcaColor);
-            }
-
-            Snippets::finishRender();
         }
 
         static void renderCallback2()
         {
-            simulation_running = true;
+            mtx.lock();
+            simulation_displayed = false;
             gScene->simulate(1.0f/60.0f);
             gScene->fetchResults(true);
-            simulation_running = false;
+            mtx.unlock();
         }
 
         static void cleanupPhysics(bool /*interactive*/)
@@ -143,6 +150,7 @@ reactor PhysxDriver {
         {
             delete sCamera;
             cleanupPhysics(true);
+            exit(0);
         }
 
         static PxRigidDynamic* createDynamic(const PxTransform& t, const PxGeometry& geometry, const PxVec3& velocity=PxVec3(0))
