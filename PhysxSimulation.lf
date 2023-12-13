@@ -43,17 +43,15 @@ reactor PhysxDriver {
         float pendulumWeight = 0.001;
         float tipWeight = 0.001f;
 
+        // mode 2
         // float initialTheta = +3.1415/2 - 0.2;
         // float forceScale = -300.0f;
         // bool unitDensity = true;
 
-        float initialTheta = +3.1415/2 - 1.5;
-        float forceScale = -2000.0f;
+        // 4 seconds
+        float initialTheta = -3.1415/2 - 0.1;
+        float forceScale = -1900.0f;
         bool unitDensity = true;
-
-        // float initialTheta = +3.1415/2 - 1.5;
-        // float forceScale = -1000.0f;
-        // bool unitDensity = true;
 
         enum SceneType
         {
@@ -339,7 +337,7 @@ reactor PhysxDriver {
 
             PxArticulationReducedCoordinate* gArticulation = gPhysics->createArticulationReducedCoordinate();
             PxArticulationLink* base = gArticulation->createLink(NULL, PxTransform());
-            PxRigidActorExt::createExclusiveShape(*base, PxBoxGeometry(5.0f, 0.1f, 5.0f), *gMaterial);
+            PxRigidActorExt::createExclusiveShape(*base, PxBoxGeometry(10.0f, 0.1f, 10.0f), *gMaterial);
             PxRigidBodyExt::updateMassAndInertia(*base, 30.f);
 
             gArticulation->setSolverIterationCounts(32);
