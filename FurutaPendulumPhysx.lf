@@ -6,22 +6,22 @@ target Cpp {
   
 import PendulumController_ from "PendulumController.lf"
 import PhysxDriver from "PhysxSimulation.lf"
-// import Print from "Print.lf"
+import Print from "Print.lf"
 
 main reactor {
   // s = new PendulumSimulation()
   // Set stepping interval to 16ms
   c = new PendulumController_()
   s = new PhysxDriver()
-  // p = new Print()
+  p = new Print()
 
   s.phi, s.d_phi -> c.phi, c.d_phi
   s.theta, s.d_theta -> c.theta, c.d_theta
   c.control -> s.u
 
-  // c.control -> p.control
-  // c.modeID -> p.modeID
-  // c.energy -> p.energy
-  // s.theta -> p.theta
-  // s.phi -> p.phi
+  c.control -> p.control
+  c.modeID -> p.modeID
+  c.energy -> p.energy
+  s.theta -> p.theta
+  s.phi -> p.phi
 }

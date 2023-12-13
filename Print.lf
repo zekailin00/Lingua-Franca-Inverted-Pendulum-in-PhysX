@@ -1,12 +1,12 @@
 /** A utility reactor to print the pendulum state into a csv file. */
-target C
+target Cpp
 
-preamble {=
-  #include <math.h>
-  #define PI 3.14159265
-=}
-
-reactor Print(filename: string = "pendulum.csv") {
+reactor Print(filename: std::string = "pendulum.csv") {
+  private preamble {=
+    #include <math.h>
+    #define PI 3.14159265
+  =}
+  
   input control: double
   input modeID: double
   input energy: double
@@ -16,28 +16,29 @@ reactor Print(filename: string = "pendulum.csv") {
   state file: FILE* = {= NULL =}
 
   reaction(startup) {=
-    self->file = fopen(self->filename, "w");
-    if(self->file == NULL) {
-      lf_print_error_and_exit("Failed to open file: %s", self->filename);
+    file = fopen(filename.c_str(), "w");
+    if(file == NULL) {
+      printf("Failed to open file: %s", filename);
+      exit(-1);
     } else {
-      fprintf(self->file, "Time,Control,Mode,Energy,Theta,Phi\n");
+      fprintf(file, "Time,Control,Mode,Energy,Theta,Phi\n");
     }
   =}
 
   reaction(control, modeID, energy, theta, phi) {=
-    double t = lf_time_logical_elapsed() / 1.0e9;
-    fprintf(self->file,
+    double t = get_elapsed_logical_time().count() / 1.0e9;
+    fprintf(file,
       "%f,%f,%f,%f,%f,%f\n",
       t,
-      control->value,
-      modeID->value,
-      energy->value,
-      fmod(theta->value, PI),
-      fmod(phi->value, PI)
+      *control.get(),
+      *modeID.get(),
+      *energy.get(),
+      fmod(*theta.get(), PI),
+      fmod(*phi.get(), PI)
     );
   =}
 
   reaction(shutdown) {=
-    fclose(self->file);
+    fclose(file);
   =}
 }

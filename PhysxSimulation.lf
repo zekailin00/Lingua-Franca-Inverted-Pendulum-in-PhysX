@@ -21,13 +21,64 @@ reactor PhysxDriver {
         static PxMaterial*		        		gMaterial	= NULL;
         static PxPvd*			            	gPvd = NULL;
 
-        static Snippets::Camera* sCamera;
+        static Snippets::Camera* sCamera = new Snippets::Camera(PxVec3(50.0f, 50.0f, 50.0f), PxVec3(-0.6f,-0.2f,-0.7f));
         static bool window_created = false;
         static bool simulation_running = false;
 
-        static PxRigidDynamic* motorObject = NULL;
-        static PxRigidDynamic* pendulumObject = NULL;
-        static PxRigidDynamic* armObject = NULL;
+        static PxRigidBody* motorObject = NULL;
+        static PxRigidBody* pendulumObject = NULL;
+        static PxRigidBody* armObject = NULL;
+
+        // PxTransform center = PxTransform(PxVec3(-48.0f, 49.0f, -48.0f));
+        // float sideLength = 0.05;
+        // float motorWeight = 0.23328;
+
+        // float armLength = 0.117;
+        // float armWeight = 0.541;
+
+        // float pendulumLength = 0.3716;
+        // float pendulumWeight = 0.000176;
+        // float tipWeight = 0.001f;
+
+        // float initialTheta = -3.1415/2;
+        // float forceScale = 1.0f;
+
+        PxTransform center = PxTransform(PxVec3(0.0f, 10.0f, 0.0f));
+        float sideLength = 1;
+        float motorWeight = 0.8;
+
+        float armLength = 7;
+        float armWeight = 0.00041;
+
+        float pendulumLength = 7;
+        float pendulumWeight = 0.000176;
+        float tipWeight = 0.001f;
+
+        float initialTheta = 0;//3.1415/2;
+        float forceScale = -1.3f;
+
+        // PxTransform center = PxTransform(PxVec3(-48.0f, 49.0f, -48.0f));
+        // float sideLength = 0.05;
+        // float motorWeight = 0.0023328;
+
+        // float armLength = 0.153;
+        // float armWeight = 32.95;
+
+        // float pendulumLength = 0.863;
+        // float pendulumWeight = 0.0147;
+        // float tipWeight = 0.2025f;
+
+        // float initialTheta = 3.1415/2;
+        // float forceScale = 10.0f;
+
+        enum SceneType
+        {
+            JointNoWeight,
+            JointWeight,
+            ArticulationNoWeight,
+            ArticulationWeight,
+        };
+        SceneType sceneType = ArticulationWeight;
 
         static void renderCallback()
         {
@@ -45,6 +96,20 @@ reactor PhysxDriver {
                 std::vector<PxRigidActor*> actors(nbActors);
                 scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
                 Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), true);
+            }
+
+            const PxVec3 rcaColor(0.6f*0.75f, 0.8f*0.75f, 1.0f*0.75f);
+            PxU32 nbArticulations = scene->getNbArticulations();
+            for(PxU32 i=0;i<nbArticulations;i++)
+            {
+                PxArticulationReducedCoordinate* articulation;
+                scene->getArticulations(&articulation, 1, i);
+
+                const PxU32 nbLinks = articulation->getNbLinks();
+                std::vector<PxArticulationLink*> links(nbLinks);
+                articulation->getLinks(&links[0], nbLinks);
+
+                Snippets::renderActors(reinterpret_cast<PxRigidActor**>(&links[0]), static_cast<PxU32>(links.size()), true, rcaColor);
             }
 
             Snippets::finishRender();
@@ -130,59 +195,8 @@ reactor PhysxDriver {
     
             return angles;
         }
-    =}
-  
-    output initalized: void
-    input quit: void
-  
-    state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
-    state count: unsigned = 0
-    state thread: std::thread
-  
-    timer step_size(0, 16ms)
-  
-    state stackZ: float = 10
-    input u: double
-  
-    output theta: double
-    output phi: double
-    output d_theta: double
-    output d_phi: double
-  
-    physical action keyboard_input: {=unsigned char=}
-  
-    reaction(startup) -> initalized, keyboard_input {=
-  
-        sCamera = new Snippets::Camera(PxVec3(50.0f, 50.0f, 50.0f), PxVec3(-0.6f,-0.2f,-0.7f));
 
-        gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-
-        gPvd = PxCreatePvd(*gFoundation);
-        PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
-        gPvd->connect(*transport,PxPvdInstrumentationFlag::eALL);
-
-        gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(),true,gPvd);
-
-        PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-        sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
-        gDispatcher = PxDefaultCpuDispatcherCreate(2);
-        sceneDesc.cpuDispatcher	= gDispatcher;
-        sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
-        gScene = gPhysics->createScene(sceneDesc);
-
-        PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
-        if(pvdClient)
-        {
-            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-        }
-
-        gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
-
-        PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
-        gScene->addActor(*groundPlane);
-
+        static void scene1()
         {
             PxReal separation = 12.0f;
             PxTransform t = PxTransform(PxVec3(0.0f, 20.0f, -20.0f));
@@ -230,10 +244,11 @@ reactor PhysxDriver {
             // j->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
 
             // localTm.p.x += separation/2;
-            // localTm.p.y += separation/2;
+            // localTm.p.y += separation/2 + 0.5;
             // g = PxBoxGeometry(0.08f, 6.0f, 0.08f);
             // offset2 = PxVec3(separation/2, 0.0, 0.0);
             // offset = PxVec3(0, separation/2, 0);
+
             localTm.p.x += separation/2;
             localTm.p.z += separation/2;
             g = PxBoxGeometry(0.08f, 0.08f, 6.0f);
@@ -245,6 +260,355 @@ reactor PhysxDriver {
             gScene->addActor(*current);
             prev = current;
             pendulumObject = current;
+        }
+
+        static void JointNoWeightFunc()
+        {
+            PxBoxGeometry boxShape;
+            PxReal density;
+            PxVec3 offset;
+            PxVec3 offset2;
+            PxTransform localTm;
+            PxRigidDynamic* prev = NULL;
+            PxRigidDynamic* current = NULL;
+
+            // Motor shape
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = motorWeight / (sideLength * sideLength * sideLength);
+            current = PxCreateDynamic(*gPhysics, center, boxShape, *gMaterial, density);
+            PxRevoluteJointCreate(
+                *gPhysics,
+                NULL, PxTransform(center.p, PxQuat(3.1415926/2, PxVec3(0,0,-1))),
+                current, PxTransform(PxQuat(3.1415926/2, PxVec3(0,0,-1)))
+            ); // rotate x to y, same pos
+            gScene->addActor(*current);
+            prev = current;
+            motorObject = current;
+
+            PxTransform rotation = PxTransform(0, 0, 0, PxQuat(initialTheta, PxVec3(1, 0, 0)));
+
+            // Arm shape
+            offset = PxVec3(armLength/2.0, 0, 0);
+            localTm = PxTransform(offset);
+            offset2 = PxVec3(sideLength/2.0, 0, 0);
+            boxShape = PxBoxGeometry(armLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = armWeight/(armLength*sideLength*sideLength);
+
+            current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            PxRevoluteJoint* j = PxRevoluteJointCreate(
+                *gPhysics,
+                prev, PxTransform(offset2),
+                current, PxTransform(-offset)
+            );
+            gScene->addActor(*current);
+            prev = current;
+            armObject = current;
+
+
+            // Pendulum
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, pendulumLength/2.0);
+            density = pendulumWeight / (pendulumLength*sideLength*sideLength);
+            localTm.p.x += armLength/2.0;
+            localTm.p.y += 0.0f;
+            localTm.p.z += pendulumLength/2.0;
+            offset2 = PxVec3(armLength/2, 0.0, 0.0);
+            offset = PxVec3(0, 0, pendulumLength/2);
+
+            current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            PxFixedJointCreate(*gPhysics,
+                prev, PxTransform(offset2),
+                current, PxTransform(-offset)
+            );
+            gScene->addActor(*current);
+            prev = current;
+            pendulumObject = current;
+        }
+
+        static void JointWeightFunc()
+        {
+            PxBoxGeometry boxShape;
+            PxReal density;
+            PxVec3 offset;
+            PxVec3 offset2;
+            PxTransform localTm;
+            PxRigidDynamic* prev = NULL;
+            PxRigidDynamic* current = NULL;
+
+            // Motor shape
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = motorWeight / (sideLength * sideLength * sideLength);
+            current = PxCreateDynamic(*gPhysics, center, boxShape, *gMaterial, density);
+            PxRevoluteJointCreate(
+                *gPhysics,
+                NULL, PxTransform(center.p, PxQuat(3.1415926/2, PxVec3(0,0,-1))),
+                current, PxTransform(PxQuat(3.1415926/2, PxVec3(0,0,-1)))
+            ); // rotate x to y, same pos
+            gScene->addActor(*current);
+            prev = current;
+            motorObject = current;
+
+            PxTransform rotation = PxTransform(0, 0, 0, PxQuat(initialTheta, PxVec3(1, 0, 0)));
+
+            // Arm shape
+            offset = PxVec3(armLength/2.0, 0, 0);
+            localTm = PxTransform(offset);
+            offset2 = PxVec3(sideLength/2.0, 0, 0);
+            boxShape = PxBoxGeometry(armLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = armWeight/(armLength*sideLength*sideLength);
+
+            current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            PxRevoluteJoint* j = PxRevoluteJointCreate(
+                *gPhysics,
+                prev, PxTransform(offset2),
+                current, PxTransform(-offset)
+            );
+            gScene->addActor(*current);
+            prev = current;
+            armObject = current;
+
+            // Pendulum
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, pendulumLength/2.0);
+            density = pendulumWeight / (pendulumLength*sideLength*sideLength);
+            localTm.p.x += armLength/2.0;
+            localTm.p.y += 0.0f;
+            localTm.p.z += pendulumLength/2.0;
+            offset2 = PxVec3(armLength/2, 0.0, 0.0);
+            offset = PxVec3(0, 0, pendulumLength/2);
+
+            current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            PxFixedJointCreate(*gPhysics,
+                prev, PxTransform(offset2),
+                current, PxTransform(-offset)
+            );
+            gScene->addActor(*current);
+            prev = current;
+            pendulumObject = current;
+
+            // tip
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = tipWeight / (sideLength*sideLength*sideLength);
+            localTm.p.x += 0.0f;
+            localTm.p.y += 0.0f;
+            localTm.p.z += pendulumLength/2.0 + sideLength/2.0;
+            offset2 = PxVec3(0.0, 0.0, pendulumLength/2);
+            offset = PxVec3(0, 0, sideLength/2);
+
+            current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            PxFixedJointCreate(*gPhysics,
+                prev, PxTransform(offset2),
+                current, PxTransform(-offset)
+            );
+            gScene->addActor(*current);
+            prev = current;
+        }
+
+        static void ArticulationWeightFunc()
+        {
+            PxBoxGeometry boxShape;
+            PxReal density;
+            PxVec3 offset;
+            PxVec3 offset2;
+            PxTransform localTm;
+            PxRigidBody* prev = NULL;
+            PxRigidBody* current = NULL;
+
+            PxArticulationJointReducedCoordinate* joint;
+
+            PxArticulationReducedCoordinate* gArticulation = gPhysics->createArticulationReducedCoordinate();
+            PxArticulationLink* base = gArticulation->createLink(NULL, PxTransform());
+            PxRigidActorExt::createExclusiveShape(*base, PxBoxGeometry(5.0f, 0.1f, 5.0f), *gMaterial);
+            PxRigidBodyExt::updateMassAndInertia(*base, 30.f);
+
+            gArticulation->setSolverIterationCounts(32);
+
+            // Motor shape
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = motorWeight / (sideLength * sideLength * sideLength);
+
+            // current = PxCreateDynamic(*gPhysics, center, boxShape, *gMaterial, density);
+            // PxRevoluteJointCreate(
+            //     *gPhysics,
+            //     NULL, PxTransform(center.p, PxQuat(3.1415926/2, PxVec3(0,0,-1))),
+            //     current, PxTransform(PxQuat(3.1415926/2, PxVec3(0,0,-1)))
+            // ); // rotate x to y, same pos
+            // gScene->addActor(*current);
+
+            PxArticulationLink* motorLink = gArticulation->createLink(base, PxTransform());
+            PxRigidActorExt::createExclusiveShape(*motorLink, boxShape, *gMaterial);
+            PxRigidBodyExt::updateMassAndInertia(*motorLink, density);
+
+            joint = static_cast<PxArticulationJointReducedCoordinate*>(motorLink->getInboundJoint());
+            joint->setParentPose(PxTransform(center.p, PxQuat(3.1415926/2, PxVec3(0,0,-1))));
+            joint->setChildPose(PxTransform(PxQuat(3.1415926/2, PxVec3(0,0,-1))));
+            joint->setJointType(PxArticulationJointType::eREVOLUTE);
+            joint->setMotion(PxArticulationAxis::eTWIST, PxArticulationMotion::eFREE);
+
+            // PxArticulationDrive posDrive;
+            // posDrive.stiffness = 1.0f;
+            // posDrive.damping = 1.0f;
+            // posDrive.maxForce = 10000.0;
+            // posDrive.driveType = PxArticulationDriveType::eFORCE;
+            // // apply and set targets (note again the consistent axis)
+            // joint->setDriveParams(PxArticulationAxis::eSWING1, posDrive);
+            // joint->setDriveVelocity(PxArticulationAxis::eSWING1, 10.0f);
+
+            prev = motorLink;
+            motorObject = motorLink;
+
+
+
+            PxTransform rotation = PxTransform(0, 0, 0, PxQuat(initialTheta, PxVec3(1, 0, 0)));
+            // Arm shape
+            offset = PxVec3(armLength/2.0, 0, 0);
+            localTm = PxTransform(offset);
+            offset2 = PxVec3(sideLength/2.0, 0, 0);
+            boxShape = PxBoxGeometry(armLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = armWeight/(armLength*sideLength*sideLength);
+
+            // current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            // PxRevoluteJoint* j = PxRevoluteJointCreate(
+            //     *gPhysics,
+            //     prev, PxTransform(offset2),
+            //     current, PxTransform(-offset)
+            // );
+            // gScene->addActor(*current);
+            
+            PxArticulationLink* armLink = gArticulation->createLink(motorLink, PxTransform());
+            PxRigidActorExt::createExclusiveShape(*armLink, boxShape, *gMaterial);
+            PxRigidBodyExt::updateMassAndInertia(*armLink, density);
+
+            joint = static_cast<PxArticulationJointReducedCoordinate*>(armLink->getInboundJoint());
+            joint->setParentPose(PxTransform(offset2));
+            joint->setChildPose(PxTransform(-offset, rotation.q));
+            joint->setJointType(PxArticulationJointType::eREVOLUTE);
+            joint->setMotion(PxArticulationAxis::eTWIST, PxArticulationMotion::eFREE);
+
+            prev = armLink;
+            armObject = armLink;
+
+
+
+            // Pendulum
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, pendulumLength/2.0);
+            density = pendulumWeight / (pendulumLength*sideLength*sideLength);
+            localTm.p.x += armLength/2.0;
+            localTm.p.y += 0.0f;
+            localTm.p.z += pendulumLength/2.0;
+            offset2 = PxVec3(armLength/2, 0.0, 0.0);
+            offset = PxVec3(0, 0, pendulumLength/2);
+
+            // current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            // PxFixedJointCreate(*gPhysics,
+            //     prev, PxTransform(offset2),
+            //     current, PxTransform(-offset)
+            // );
+            // gScene->addActor(*current);
+
+            PxArticulationLink* pendulumLink = gArticulation->createLink(armLink, PxTransform());
+            PxRigidActorExt::createExclusiveShape(*pendulumLink, boxShape, *gMaterial);
+            PxRigidBodyExt::updateMassAndInertia(*pendulumLink, density);
+
+            joint = static_cast<PxArticulationJointReducedCoordinate*>(pendulumLink->getInboundJoint());
+            joint->setParentPose(PxTransform(offset2));
+            joint->setChildPose(PxTransform(-offset));
+            joint->setJointType(PxArticulationJointType::eFIX);
+
+            prev = pendulumLink;
+            pendulumObject = pendulumLink;
+
+
+
+            // tip
+            boxShape = PxBoxGeometry(sideLength/2.0, sideLength/2.0, sideLength/2.0);
+            density = tipWeight / (sideLength*sideLength*sideLength);
+            localTm.p.x += 0.0f;
+            localTm.p.y += 0.0f;
+            localTm.p.z += pendulumLength/2.0 + sideLength/2.0;
+            offset2 = PxVec3(0.0, 0.0, pendulumLength/2);
+            offset = PxVec3(0, 0, sideLength/2);
+
+            // current = PxCreateDynamic(*gPhysics, center*rotation*localTm, boxShape, *gMaterial, density);
+            // PxFixedJointCreate(*gPhysics,
+            //     prev, PxTransform(offset2),
+            //     current, PxTransform(-offset)
+            // );
+            // gScene->addActor(*current);
+
+            PxArticulationLink* tipLink = gArticulation->createLink(pendulumLink, PxTransform());
+            PxRigidActorExt::createExclusiveShape(*tipLink, boxShape, *gMaterial);
+            PxRigidBodyExt::updateMassAndInertia(*tipLink, density);
+
+            joint = static_cast<PxArticulationJointReducedCoordinate*>(tipLink->getInboundJoint());
+            joint->setParentPose(PxTransform(offset2));
+            joint->setChildPose(PxTransform(-offset));
+            joint->setJointType(PxArticulationJointType::eFIX);
+
+            prev = tipLink;
+
+            gScene->addArticulation(*gArticulation);
+        }
+    =}
+  
+    output initalized: void
+    input quit: void
+  
+    state prompt_time: {= reactor::TimePoint =} = {= reactor::TimePoint::min() =}
+    state count: unsigned = 0
+    state thread: std::thread
+  
+    timer step_size(0, 16ms)
+  
+    state stackZ: float = 10
+    input u: double
+  
+    output theta: double
+    output phi: double
+    output d_theta: double
+    output d_phi: double
+  
+    physical action keyboard_input: {=unsigned char=}
+  
+    reaction(startup) -> initalized, keyboard_input {=
+
+        gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+
+        gPvd = PxCreatePvd(*gFoundation);
+        PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
+        gPvd->connect(*transport,PxPvdInstrumentationFlag::eALL);
+
+        gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(),true,gPvd);
+
+        PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+        sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
+        gDispatcher = PxDefaultCpuDispatcherCreate(2);
+        sceneDesc.cpuDispatcher	= gDispatcher;
+        sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
+        gScene = gPhysics->createScene(sceneDesc);
+
+        PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+        if(pvdClient)
+        {
+            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+            pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+        }
+
+        gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.0f);
+
+        PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0,1,0,0), *gMaterial);
+        gScene->addActor(*groundPlane);
+
+        if (sceneType == JointNoWeight)
+        {
+            JointNoWeightFunc();
+        }
+        else if (sceneType == JointWeight)
+        {
+            JointWeightFunc();
+        }
+        else
+        {
+            ArticulationWeightFunc();
         }
 
         thread = std::thread([&]{
@@ -260,7 +624,7 @@ reactor PhysxDriver {
         if (window_created)
         {
             renderCallback2();
-    
+            
             {
                 PxTransform transform = motorObject->getGlobalPose();
         
@@ -284,21 +648,32 @@ reactor PhysxDriver {
 
             {
                 PxTransform aTransform = armObject->getGlobalPose();
-                float armPlaneAngle = std::atan(aTransform.p.x / (aTransform.p.z + 20));
+                float armPlaneAngle = std::atan2((aTransform.p.z - center.p.z), (aTransform.p.x - center.p.x));
                 printTF(aTransform);
 
                 PxTransform pTransform = pendulumObject->getGlobalPose();
                 printTF(pTransform);
-                float planeDegree = std::atan(pTransform.p.x / (pTransform.p.z + 20));
+                printTF(center);
+                float planeDegree = std::atan2((pTransform.p.z - center.p.z), (pTransform.p.x - center.p.x));
 
-                float range = std::min(1.0f, (float)std::max<float>(-1.0f, (pTransform.p.y - 20.0)/6.5));
+                float range = std::min(
+                    1.0f,
+                    (float)std::max<float>(
+                        -1.0f,
+                        (pTransform.p.y - center.p.y)/(0.1+pendulumLength/2.0)
+                    )
+                );
+
+                std::cout << "pTransform.p.y: " << pTransform.p.y  << std::endl;
+                std::cout << "center.p.y: " << center.p.y << std::endl;
+                std::cout << "pendulumLength/2.0: " << pendulumLength/2.0 << std::endl;
+
                 float angle = std::asin(range) - std::numbers::pi / 2;
-                if (armPlaneAngle < planeDegree)
+                if (armPlaneAngle < planeDegree && std::fabs(planeDegree - armPlaneAngle) < 3.3)
                     angle *= -1;
                 
                 std::cout << "pendulum plane angle: " << planeDegree << std::endl;
                 std::cout << "arm plane angle: " << armPlaneAngle << std::endl;
-                std::cout << "arm is greater: " << (armPlaneAngle > angle) << std::endl;
                 std::cout << "pendulum angle: " << angle << std::endl;
 
                 if (isnan(angle))
@@ -315,8 +690,8 @@ reactor PhysxDriver {
     =}
 
     reaction(u) {=
-        std::cout << "applied torque is " << *u.get() * 300 << std::endl;
-        motorObject->addTorque(PxVec3(0.0f, *u.get() * 300, 0.0f));
+        std::cout << "applied torque is " << *u.get() * forceScale << std::endl;
+        motorObject->addTorque(PxVec3(0.0f, *u.get() * forceScale, 0.0f));
     =}
 
     reaction(quit) {=
