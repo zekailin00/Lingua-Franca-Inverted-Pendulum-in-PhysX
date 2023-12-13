@@ -44,14 +44,14 @@ reactor PhysxDriver {
         float tipWeight = 0.001f;
 
         // mode 2
-        // float initialTheta = +3.1415/2 - 0.2;
-        // float forceScale = -300.0f;
-        // bool unitDensity = true;
-
-        // 4 seconds
-        float initialTheta = -3.1415/2 - 0.1;
-        float forceScale = -1900.0f;
+        float initialTheta = +3.1415/2 - 0.2;
+        float forceScale = -300.0f;
         bool unitDensity = true;
+
+        // // 4 seconds
+        // float initialTheta = -3.1415/2 - 0.1;
+        // float forceScale = -1900.0f;
+        // bool unitDensity = true;
 
         enum SceneType
         {
