@@ -5,3 +5,4 @@ include/**
 c-test/**
 build/**
 bin/**
+**.csv

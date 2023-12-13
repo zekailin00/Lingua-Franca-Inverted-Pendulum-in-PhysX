@@ -1,40 +1,42 @@
 # target_link_libraries(${LF_MAIN_TARGET} )
 message("LF cmake script executed")
 
+set(PHYSX_PATH "/home/zekailin00/Desktop/PhysX")
+
 add_library(physx_debug STATIC IMPORTED)
 set_property(TARGET physx_debug PROPERTY
     IMPORTED_LOCATION
-    "/home/zekailin00/Desktop/PhysX/physx/bin/linux.clang/release/libPhysX_static_64.a"
+    "${PHYSX_PATH}/physx/bin/linux.clang/release/libPhysX_static_64.a"
 )
 
 add_library(physx_common_debug STATIC IMPORTED)
 set_property(TARGET physx_common_debug PROPERTY
     IMPORTED_LOCATION
-    "/home/zekailin00/Desktop/PhysX/physx/bin/linux.clang/release/libPhysXCommon_static_64.a"
+    "${PHYSX_PATH}/physx/bin/linux.clang/release/libPhysXCommon_static_64.a"
 )
 
 add_library(physx_foundation_debug STATIC IMPORTED)
 set_property(TARGET physx_foundation_debug PROPERTY
     IMPORTED_LOCATION
-    "/home/zekailin00/Desktop/PhysX/physx/bin/linux.clang/release/libPhysXFoundation_static_64.a"
+    "${PHYSX_PATH}/physx/bin/linux.clang/release/libPhysXFoundation_static_64.a"
 )
 
 add_library(physx_extensions_debug STATIC IMPORTED)
 set_property(TARGET physx_extensions_debug PROPERTY
     IMPORTED_LOCATION
-    "/home/zekailin00/Desktop/PhysX/physx/bin/linux.clang/release/libPhysXExtensions_static_64.a"
+    "${PHYSX_PATH}/physx/bin/linux.clang/release/libPhysXExtensions_static_64.a"
 )
 
 add_library(physx_pvd_sdk_debug STATIC IMPORTED)
 set_property(TARGET physx_pvd_sdk_debug PROPERTY
     IMPORTED_LOCATION
-    "/home/zekailin00/Desktop/PhysX/physx/bin/linux.clang/release/libPhysXPvdSDK_static_64.a"
+    "${PHYSX_PATH}/physx/bin/linux.clang/release/libPhysXPvdSDK_static_64.a"
 )
 
 add_library(physx_snippet_render STATIC IMPORTED)
 set_property(TARGET physx_snippet_render PROPERTY
     IMPORTED_LOCATION
-    "/home/zekailin00/Desktop/PhysX/physx/bin/linux.clang/release/libSnippetRender_static_64.a"
+    "${PHYSX_PATH}/physx/bin/linux.clang/release/libSnippetRender_static_64.a"
 )
 
 find_package(OpenGL REQUIRED)
@@ -61,14 +63,14 @@ target_link_libraries(physx INTERFACE
 )
 
 target_include_directories(${LF_MAIN_TARGET} PUBLIC 
-    "/home/zekailin00/Desktop/PhysX/physx/include"
-    "/home/zekailin00/Desktop/PhysX/physx/snippets/snippetrender"
-    "/home/zekailin00/Desktop/PhysX/physx/snippets/graphics/include"
+    "${PHYSX_PATH}/physx/include"
+    "${PHYSX_PATH}/physx/snippets/snippetrender"
+    "${PHYSX_PATH}/physx/snippets/graphics/include"
     ${OPENGL_INCLUDE_DIRS}
     ${GLUT_INCLUDE_DIRS} 
 )
 
 target_link_libraries(${LF_MAIN_TARGET}
     physx
-    "/home/zekailin00/Desktop/PhysX/physx/bin/linux.clang/debug/libPVDRuntime_64.so"
+    "${PHYSX_PATH}/physx/bin/linux.clang/debug/libPVDRuntime_64.so"
 )

@@ -1,5 +1,5 @@
 target Cpp {
-    cmake-include: "Hello.cmake"
+    cmake-include: "physx.cmake"
   };
   
 reactor PhysxDriver {

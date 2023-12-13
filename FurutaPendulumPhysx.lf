@@ -1,7 +1,7 @@
 target Cpp {
     // timeout: 3 secs,
     // fast: true,
-    cmake-include: "Hello.cmake"
+    cmake-include: "physx.cmake"
 }
   
 import PendulumController_ from "PendulumController.lf"
